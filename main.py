@@ -1,6 +1,9 @@
 from Config import Config
 from Helper import UIMaker
 
+from scenes.SyncMoveScene import SyncMoveScene
+from scenes.ShadowBoxing.ShadowboxScene import ShadowBoxScene
+
 import pygame
 import sys
 
@@ -15,6 +18,20 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = event.pos
+                
+                for key, value in Config.MENUS.items():
+                    button_rect = pygame.Rect(value['pos'], value['size'])
+                    if button_rect.collidepoint(mouse_pos):
+                        
+                        if key == "shadow_box":
+                            # Run Sync Move Scene
+                            sync_scene = SyncMoveScene(screen)
+                            result = sync_scene.run()
+                            # Transition to Shadow Box Scene with the result from Sync Move Scene
+                            shadow_box_scene = ShadowBoxScene(screen, result)
+                            shadow_box_scene.run()
 
     screen.fill(Config.WHITE)
 

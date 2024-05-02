@@ -1,7 +1,10 @@
 import pygame
 import sys
-from ..Config import Config
-from ..Helper import UIMaker
+
+sys.path.append('../')
+
+from Config import Config
+from Helper import UIMaker
 
 class SyncMoveScene:
     def __init__(self, screen):
@@ -24,15 +27,20 @@ class SyncMoveScene:
     
     def run(self):
         running = True
+        result = False
+
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    result = True
+
                 running = self.handle_events(event)
 
             self.screen.fill(Config.WHITE)  # Clear the screen with a fixed color
-            
-            # Draw the footer using UIHelper
+    
+            # Draw the footer
             UIMaker.draw_footer(
                 self.screen, self.footer_height, Config.GREY, "Sync Move Scene",
                 (20, Config.WINDOW_SIZE[1] - 20), self.exit_button,
