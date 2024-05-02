@@ -20,3 +20,5 @@ class Config:
         "pad_works": {"pos": (50, 190), "size": (200, 50), "label": "Pad Works"},
         "play_vs_bot": {"pos": (50, 260), "size": (200, 50), "label": "Play vs Bot"}
     }
+
+    FOOTER_SIZE = 100
