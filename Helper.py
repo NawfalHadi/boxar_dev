@@ -31,3 +31,9 @@ class UIMaker:
 
         # Draw the button in the footer
         UIMaker.draw_button(screen, button_props['color'], button_props['pos'], button_props['size'], button_props['label'])
+
+    @staticmethod
+    def draw_text(screen, text, position, font_size=36, text_color=(0, 0, 0)):
+        font = pygame.font.Font(None, font_size)
+        text_surface = font.render(text, True, text_color)
+        screen.blit(text_surface, position)
