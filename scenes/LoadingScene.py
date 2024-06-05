@@ -3,6 +3,7 @@ import pygame
 import time
 
 import mediapipe as mp
+import pickle
 
 sys.path.append('../')
 
@@ -15,6 +16,7 @@ class LoadingScene:
         self.mp_drawing = None
         self.mp_holistic = None
         self.test = None
+        self.model = None
 
     def display_loading_message(self, message="Loading..", progress=0):
         self.screen.fill(Config.WHITE)
@@ -24,6 +26,10 @@ class LoadingScene:
         progress_rect = pygame.Rect((Config.WINDOW_SIZE[0] // 2 - progress_width // 2, Config.WINDOW_SIZE[1] // 2 + 50), (progress_width * progress // 100, 20))
         pygame.draw.rect(self.screen, Config.BLACK, progress_rect)
         pygame.display.flip()
+
+    def load_model(self):
+        with open('models/boxing_form_v3.pkl', 'rb') as f:
+            self.model = pickle.load(f)
 
     def load_resources(self):
         self.display_loading_message("Loading Resources..")
@@ -36,6 +42,7 @@ class LoadingScene:
 
         self.mp_drawing = mp_drawing
         self.mp_holistic = mp_holistic
+        self.model = self.load_model()
 
         for progress in range(0, 101, 10):
             self.display_loading_message("Loading Resources..", progress)
@@ -43,3 +50,5 @@ class LoadingScene:
 
         self.display_loading_message("Resources loaded successfully!")
         time.sleep(1)  # Short pause to show the message
+
+    
