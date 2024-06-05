@@ -10,6 +10,7 @@ from Helper import UIMaker
 
 # =============
 import mediapipe as mp
+import numpy as np
 import cv2
 # ==============
 
@@ -27,6 +28,12 @@ class SyncMoveScene:
         self.mp_drawing = None
         self.mp_holistic = None
 
+        # Initialize OpenCV capture
+        self.cap = cv2.VideoCapture(0)
+        if not self.cap.isOpened():
+            print("Error: Could not open camera.")
+            sys.exit()
+        
     def handle_events(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
@@ -56,7 +63,24 @@ class SyncMoveScene:
                 running = self.handle_events(event)
 
             self.screen.fill(Config.WHITE)  # Clear the screen with a fixed color
-    
+
+            ret, frame = self.cap.read()
+            if not ret:
+                print("Error: Could not read frame.")
+                continue
+
+            # Convert the frame from BGR to RGB
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Convert the image to a Pygame surface
+            frame = np.rot90(frame)  # Rotate if needed to fit the orientation
+            frame_surface = pygame.surfarray.make_surface(frame)
+            
+            # Calculate the position to place the camera feed
+            camera_rect = frame_surface.get_rect(topleft=(0, 0))
+
+            # Blit the camera feed onto the screen
+            self.screen.blit(frame_surface, camera_rect)
 
             text_position = (20, Config.WINDOW_SIZE[1] - self.footer_height - 40)
             UIMaker.draw_text(self.screen, loading_scene.test, text_position, font_size=24, text_color=Config.BLACK)
@@ -74,5 +98,6 @@ class SyncMoveScene:
             
             pygame.display.flip()
 
+        self.cap.release()
         pygame.quit()
         sys.exit()
