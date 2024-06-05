@@ -12,6 +12,7 @@ class UIMaker:
         text_rect = text_surface.get_rect(center=button_rect.center)
         screen.blit(text_surface, text_rect)
 
+    @staticmethod
     def is_hover(position, size):
         mouse_pos = pygame.mouse.get_pos()
         button_rect = pygame.Rect(position, size)
