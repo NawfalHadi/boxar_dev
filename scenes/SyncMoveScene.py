@@ -1,10 +1,17 @@
 import pygame
 import sys
 
+from .LoadingScene import LoadingScene
+
 sys.path.append('../')
 
 from Config import Config
 from Helper import UIMaker
+
+# =============
+import mediapipe as mp
+import cv2
+# ==============
 
 class SyncMoveScene:
     def __init__(self, screen):
@@ -17,6 +24,9 @@ class SyncMoveScene:
             "color": Config.BUTTON_NORMAL_COLOR
         }
 
+        self.mp_drawing = None
+        self.mp_holistic = None
+
     def handle_events(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
@@ -27,6 +37,12 @@ class SyncMoveScene:
         return True
     
     def run(self):
+        loading_scene = LoadingScene(self.screen)
+        loading_scene.load_resources()
+
+        self.mp_drawing = loading_scene.mp_drawing
+        self.mp_holistic = loading_scene.mp_holistic
+
         running = True
         result = False
 
@@ -43,7 +59,7 @@ class SyncMoveScene:
     
 
             text_position = (20, Config.WINDOW_SIZE[1] - self.footer_height - 40)
-            UIMaker.draw_text(self.screen, "jab", text_position, font_size=24, text_color=Config.BLACK)
+            UIMaker.draw_text(self.screen, loading_scene.test, text_position, font_size=24, text_color=Config.BLACK)
 
 
             # Draw the footer

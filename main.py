@@ -2,21 +2,12 @@ from Config import Config
 from Helper import UIMaker
 
 from scenes.SyncMoveScene import SyncMoveScene
+from scenes.LoadingScene import LoadingScene
 from scenes.ShadowBoxing.ShadowboxScene import ShadowBoxScene
 from scenes.Tutorial.TutorialScene import TutorialScene
 
 import pygame
 import sys
-
-# =============
-import pickle
-import mediapipe as mp
-import cv2
-import numpy as np
-import pandas as pd
-
-from mediapipe.framework.formats import landmark_pb2
-# ==============
 
 # Initialize Pygame
 pygame.init()
