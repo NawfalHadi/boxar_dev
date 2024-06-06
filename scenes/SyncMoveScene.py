@@ -13,6 +13,8 @@ import mediapipe as mp
 from mediapipe.framework.formats import landmark_pb2
 # =============
 import numpy as np
+import warnings
+import pandas as pd
 import cv2
 # ==============
 
@@ -29,6 +31,7 @@ class SyncMoveScene:
 
         self.mp_drawing = None
         self.mp_holistic = None
+        self.model = None
 
         # Initialize OpenCV capture
         self.cap = cv2.VideoCapture(0)
@@ -71,6 +74,8 @@ class SyncMoveScene:
                 x, y = int(landmark.x * frame.shape[1]), int(landmark.y * frame.shape[0])
                 cv2.circle(frame, (x, y), 5, (255, 0, 0), -1)
 
+            self.handle_prediction(new_lm)
+
         # Convert the image to a Pygame surface
         frame = np.rot90(frame)  # Rotate if needed to fit the orientation
         frame_surface = pygame.surfarray.make_surface(frame)
@@ -80,6 +85,24 @@ class SyncMoveScene:
 
         # Blit the camera feed onto the screen
         self.screen.blit(frame_surface, camera_rect)
+
+    def handle_prediction(self, new_landmark):
+        try:
+            # Extract Pose landmarks
+            pose = new_landmark.landmark
+            pose_row = list(np.array([[landmark.x, landmark.y, landmark.z, landmark.visibility] for landmark in pose])
+                                .flatten())
+            
+            # Make Detections
+            X = pd.DataFrame([pose_row])
+
+            # Ignore scikit-learn warnings about feature names
+            warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
+            body_language_class = self.model.predict(X)[0]
+            body_language_prob = self.model.predict_proba(X)[0]
+            print(body_language_class, body_language_prob)
+        except Exception as e:
+            print(e)
     
     def run(self):
         loading_scene = LoadingScene(self.screen)
@@ -87,6 +110,7 @@ class SyncMoveScene:
 
         self.mp_drawing = loading_scene.mp_drawing
         self.mp_holistic = loading_scene.mp_holistic
+        self.model = loading_scene.model
 
         running = True
         result = False

@@ -42,7 +42,7 @@ class LoadingScene:
 
         self.mp_drawing = mp_drawing
         self.mp_holistic = mp_holistic
-        self.model = self.load_model()
+        self.load_model()
 
         for progress in range(0, 101, 10):
             self.display_loading_message("Loading Resources..", progress)
