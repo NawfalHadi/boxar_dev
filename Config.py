@@ -22,3 +22,5 @@ class Config:
     }
 
     FOOTER_SIZE = 100
+
+    

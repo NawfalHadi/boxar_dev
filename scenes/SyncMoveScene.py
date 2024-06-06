@@ -10,6 +10,8 @@ from Helper import UIMaker
 
 # =============
 import mediapipe as mp
+from mediapipe.framework.formats import landmark_pb2
+# =============
 import numpy as np
 import cv2
 # ==============
@@ -43,6 +45,42 @@ class SyncMoveScene:
                 return False  # Returning False will indicate to exit this scene
         return True
     
+    def handle_camera(self, frame, holistic):
+        # Convert the frame from BGR to RGB
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame.flags.writeable = False
+
+        results = holistic.process(frame)
+
+        if results.pose_landmarks:
+            frame.flags.writeable = True
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
+            # Get specific landmarks
+            wrist_l = results.pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.LEFT_WRIST]
+            elbow_l = results.pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.LEFT_ELBOW]
+            wrist_r = results.pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.RIGHT_WRIST]
+            elbow_r = results.pose_landmarks.landmark[mp.solutions.holistic.PoseLandmark.RIGHT_ELBOW]
+
+            # Create a custom landmark list
+            new_lm = landmark_pb2.NormalizedLandmarkList()
+            new_lm.landmark.extend([wrist_l, wrist_r, elbow_l, elbow_r])
+
+            # Draw landmarks
+            for landmark in new_lm.landmark:
+                x, y = int(landmark.x * frame.shape[1]), int(landmark.y * frame.shape[0])
+                cv2.circle(frame, (x, y), 5, (255, 0, 0), -1)
+
+        # Convert the image to a Pygame surface
+        frame = np.rot90(frame)  # Rotate if needed to fit the orientation
+        frame_surface = pygame.surfarray.make_surface(frame)
+            
+        # Calculate the position to place the camera feed
+        camera_rect = frame_surface.get_rect(topleft=(0, 0))
+
+        # Blit the camera feed onto the screen
+        self.screen.blit(frame_surface, camera_rect)
+    
     def run(self):
         loading_scene = LoadingScene(self.screen)
         loading_scene.load_resources()
@@ -63,24 +101,15 @@ class SyncMoveScene:
                 running = self.handle_events(event)
 
             self.screen.fill(Config.WHITE)  # Clear the screen with a fixed color
-
-            ret, frame = self.cap.read()
-            if not ret:
-                print("Error: Could not read frame.")
-                continue
-
-            # Convert the frame from BGR to RGB
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-            # Convert the image to a Pygame surface
-            frame = np.rot90(frame)  # Rotate if needed to fit the orientation
-            frame_surface = pygame.surfarray.make_surface(frame)
             
-            # Calculate the position to place the camera feed
-            camera_rect = frame_surface.get_rect(topleft=(0, 0))
+            with self.mp_holistic.Holistic(min_detection_confidence=0.5, min_tracking_confidence=0.5) as holistic:
+                ret, frame = self.cap.read()
 
-            # Blit the camera feed onto the screen
-            self.screen.blit(frame_surface, camera_rect)
+                if not ret:
+                    print("Error: Could not read frame.")
+                    continue
+
+                self.handle_camera(frame, holistic)
 
             text_position = (20, Config.WINDOW_SIZE[1] - self.footer_height - 40)
             UIMaker.draw_text(self.screen, loading_scene.test, text_position, font_size=24, text_color=Config.BLACK)
